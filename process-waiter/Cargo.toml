@@ -1,5 +1,5 @@
 [package]
-name = "miscutils-find-upwards"
+name = "miscutils-process-waiter"
 version = "0.1.0"
 authors = ["Sean Johnson <sean@maio.me>"]
 edition = "2018"
@@ -7,8 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-structopt = "0.3.2"
 failure = "0.1.5"
+structopt = "0.3.2"
+tempfile = "3"
+unix-named-pipe = "0.2.0"
 
 [dependencies.miscutils-core]
 path = "../core"

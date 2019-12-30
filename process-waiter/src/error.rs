@@ -11,9 +11,4 @@ pub enum Error {
     PathDoesNotExist {
         name: String,
     },
-
-    #[fail(display = "target given is an absolute: {}; only relative fragments are allowed", name)]
-    TargetIsAbsolute {
-        name: String,
-    }
 }

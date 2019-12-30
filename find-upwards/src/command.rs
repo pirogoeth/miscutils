@@ -1,6 +1,7 @@
 use failure::Error;
 use miscutils_core::Executable;
 use std::borrow::Cow;
+use std::cmp;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -75,6 +76,7 @@ impl Executable for Command {
         let full_paths = search_paths.into_iter()
             .map(|path| path.join(&self.target))
             .filter(|path| path.exists())
+            .map(|path| path.canonicalize().expect("could not get canonical path"))
             .collect::<Vec<PathBuf>>();
 
         dump_paths(full_paths, self.all);
@@ -94,7 +96,10 @@ fn build_search_paths<'a>(source_dir: &'a PathBuf, max_depth: Option<i32>) -> Ve
     }
 
     match max_depth {
-        Some(depth) => search_paths.drain(0..depth as usize).collect(),
+        Some(depth) => {
+            let depth = cmp::min(depth as usize, search_paths.len());
+            search_paths.drain(0..depth as usize).collect()
+        },
         None => search_paths,
     }
 }

@@ -26,3 +26,6 @@ path = "core"
 
 [dependencies.miscutils-find-upwards]
 path = "find-upwards"
+
+[dependencies.miscutils-process-waiter]
+path = "process-waiter"

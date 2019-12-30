@@ -1,0 +1,23 @@
+meta:
+  target:   glow
+  url:      https://concourse.dev.maio.me
+  team:     main
+
+  name:     miscutils
+  pipeline: miscutils
+
+  repository:
+    source:
+      uri: https://glow.dev.maio.me/seanj/miscutils.git
+      branch: master
+
+  tasks:
+    rust-test: source/ci/tasks/rust/test.yml
+    rust-lint: source/ci/tasks/rust/lint.yml
+    img-build-oci: commons/tasks/img/build-oci.yml
+    img-write-tags: commons/tasks/img/write-tags.yml
+
+  upstream:
+    commons:
+      uri: "https://glow.dev.maio.me/containers/commons.git"
+      branch: "master"
