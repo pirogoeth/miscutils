@@ -1,6 +1,7 @@
 use failure::Error;
 use miscutils_core::Executable;
 use std::borrow::Cow;
+use std::cmp;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -14,7 +15,7 @@ pub struct Command {
 
     #[structopt(short, long)]
     /// Maximum depth to traverse upward during the search
-    /// 
+    ///
     /// `max_depth` is optional. If not provided, `find-upwards` will
     /// traverse all the way up the parent tree, searching for `target`
     max_depth: Option<i32>,
@@ -51,30 +52,34 @@ impl Executable for Command {
             let source_dir = source_dir.clone();
             let source_name = source_dir.to_string_lossy().to_owned();
             let source_name = match source_name {
-                Cow::Borrowed(_) => return Err(super::error::Error::InternalError {
-                    description: "expected an owned value for `source_name`".to_string(),
-                }.into()),
+                Cow::Borrowed(_) => {
+                    return Err(super::error::Error::InternalError {
+                        description: "expected an owned value for `source_name`".to_string(),
+                    }
+                    .into())
+                }
                 Cow::Owned(source_name) => source_name,
             };
-            return Err(super::error::Error::PathDoesNotExist {
-                name: source_name,
-            }.into());
+            return Err(super::error::Error::PathDoesNotExist { name: source_name }.into());
         }
 
         // Ensure the fragment is relative, not absolute
         if self.target.starts_with("/") {
             return Err(super::error::Error::TargetIsAbsolute {
                 name: self.target.clone(),
-            }.into());
+            }
+            .into());
         }
 
         // Load the search paths for the source directory
         let search_paths = build_search_paths(&source_dir, self.max_depth);
 
         // Create paths to the requested item and check for existence
-        let full_paths = search_paths.into_iter()
+        let full_paths = search_paths
+            .into_iter()
             .map(|path| path.join(&self.target))
             .filter(|path| path.exists())
+            .map(|path| path.canonicalize().expect("could not get canonical path"))
             .collect::<Vec<PathBuf>>();
 
         dump_paths(full_paths, self.all);
@@ -94,7 +99,10 @@ fn build_search_paths<'a>(source_dir: &'a PathBuf, max_depth: Option<i32>) -> Ve
     }
 
     match max_depth {
-        Some(depth) => search_paths.drain(0..depth as usize).collect(),
+        Some(depth) => {
+            let depth = cmp::min(depth as usize, search_paths.len());
+            search_paths.drain(0..depth as usize).collect()
+        }
         None => search_paths,
     }
 }

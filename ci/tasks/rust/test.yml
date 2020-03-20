@@ -1,0 +1,17 @@
+---
+
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: containers.dev.maio.me/library/rust
+    tag: latest
+
+params:
+
+inputs:
+- name: source
+
+run:
+  path: source/ci/tasks/rust/test.sh

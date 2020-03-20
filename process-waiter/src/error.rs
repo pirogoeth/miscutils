@@ -7,10 +7,4 @@ pub enum Error {
 
     #[fail(display = "path does not exist: {}", name)]
     PathDoesNotExist { name: String },
-
-    #[fail(
-        display = "target given is an absolute: {}; only relative fragments are allowed",
-        name
-    )]
-    TargetIsAbsolute { name: String },
 }
