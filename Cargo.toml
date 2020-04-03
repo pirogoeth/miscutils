@@ -8,18 +8,14 @@ edition = "2018"
 
 [workspace]
 
-[lib]
-name = "miscutils"
-path = "src/lib.rs"
-
 [[bin]]
 name = "mu"
 path = "src/main.rs"
 doc = false
 
 [dependencies]
-structopt = "0.3.2"
-failure = "0.1.5"
+structopt = "0.3.12"
+failure = "0.1.7"
 
 [dependencies.miscutils-core]
 path = "core"
@@ -29,3 +25,6 @@ path = "find-upwards"
 
 [dependencies.miscutils-process-waiter]
 path = "process-waiter"
+
+[dependencies.miscutils-ssl-tester]
+path = "ssl-tester"

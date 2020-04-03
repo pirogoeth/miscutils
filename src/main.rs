@@ -1,17 +1,17 @@
+use failure;
 use miscutils_core::Executable;
 use miscutils_find_upwards;
+use miscutils_process_waiter;
+use miscutils_ssl_tester;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "swiss-army knife of miscellaneous utilities")]
 #[structopt(name = "mu")]
 enum Command {
-    /// `find-upwards` is a breadth-first, upwards finding utility, built to
-    /// quickly find a specific object in the given directory's parent tree.
     FindUpwards(miscutils_find_upwards::Command),
-    /// `process-waiter` is a WIP simple process supervisor that listens for
-    /// instructions on a Unix named pipe
     ProcessWaiter(miscutils_process_waiter::Command),
+    SslTester(miscutils_ssl_tester::Command),
 }
 
 fn main() {
@@ -19,7 +19,16 @@ fn main() {
     let result = match command {
         Command::FindUpwards(item) => item.execute(),
         Command::ProcessWaiter(item) => item.execute(),
+        Command::SslTester(item) => item.execute(),
     };
 
-    result.expect("Shit broke, yo");
+    if result.is_err() {
+        dump_error_chain(&result.unwrap_err());
+    }
+}
+
+fn dump_error_chain(err: &failure::Error) {
+    for cause in failure::Error::iter_chain(err) {
+        println!("{}: {}", cause.name().unwrap_or("Error"), cause);
+    }
 }

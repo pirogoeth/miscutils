@@ -5,8 +5,8 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "process-waiter")]
-/// `find-upwards` is a breadth-first, upwards finding utility, built to
-/// quickly find a specific object in the given directory's parent tree.
+/// `process-waiter` is a WIP simple process supervisor that listens for
+/// instructions on a Unix named pipe
 pub struct Command {
     /// Command to supervise
     command: Vec<String>,
