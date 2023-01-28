@@ -21,8 +21,6 @@ jobs:
     trigger: true
   - task: "run tests"
     file: (( grab meta.tasks.cargo-test ))
-    params:
-      INSTALL_PACKAGES: "build-base"
 
 - name: "build miscutils"
   public: true

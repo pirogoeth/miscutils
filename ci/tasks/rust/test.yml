@@ -9,7 +9,6 @@ image_resource:
     tag: latest
 
 params:
-  INSTALL_PACKAGES: ""
 
 inputs:
 - name: source

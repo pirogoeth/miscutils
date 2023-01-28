@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-structopt = "0.3.14"
+structopt = "0.3.12"
 failure = "0.1.7"
 
 [dependencies.miscutils-core]

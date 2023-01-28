@@ -17,9 +17,17 @@ pub struct Command {
     #[structopt(long, default_value = "100")]
     tls_verify_depth: u32,
 
-    /// Set a list of protocol versions to test
-    #[structopt(long, parse(try_from_str = try_parse_proto_versions))]
-    tls_proto_versions: Option<::std::vec::Vec<ssl::SslVersion>>,
+    /// Set the lowest supported protocol version
+    #[structopt(long, parse(try_from_str = try_parse_proto_version))]
+    tls_min_proto_version: Option<::std::option::Option<ssl::SslVersion>>,
+
+    /// Set the highest supported protocol version
+    #[structopt(long, parse(try_from_str = try_parse_proto_version))]
+    tls_max_proto_version: Option<::std::option::Option<ssl::SslVersion>>,
+
+    /// Set the highest and lowest supported protocol version
+    #[structopt(long, parse(try_from_str = try_parse_proto_version))]
+    tls_proto_version: Option<::std::option::Option<ssl::SslVersion>>,
 
     /// Disable the use of SNI
     #[structopt(long)]
@@ -49,6 +57,41 @@ impl Executable for Command {
         builder.set_verify(self.tls_verify);
         builder.set_verify_depth(self.tls_verify_depth);
 
+        let mut tls_min_proto_version = self.tls_min_proto_version;
+        let mut tls_max_proto_version = self.tls_max_proto_version;
+
+        if self.tls_proto_version.is_some() {
+            if tls_min_proto_version.is_some() {
+                return Err(super::error::Error::ConflictingOptions("tls-proto-version", "tls-min-proto-version").into());
+            } else if tls_max_proto_version.is_some() {
+                return Err(super::error::Error::ConflictingOptions("tls-proto-version", "tls-max-proto-version").into());
+            } else {
+                if let Some(version) = self.tls_proto_version {
+                    tls_max_proto_version = Some(version);
+                    tls_min_proto_version = Some(version);
+                } else {
+                    tls_max_proto_version = None;
+                    tls_min_proto_version = None;
+                }
+            }
+        }
+
+        if tls_min_proto_version.is_some() {
+            if let Some(version) = tls_min_proto_version {
+                builder.set_min_proto_version(version)?;
+            } else {
+                builder.set_min_proto_version(None)?;
+            }
+        }
+
+        if tls_max_proto_version.is_some() {
+            if let Some(version) = tls_max_proto_version {
+                builder.set_max_proto_version(version)?;
+            } else {
+                builder.set_max_proto_version(None)?;
+            }
+        }
+
         let connector = builder.build();
         let mut ssl_configuration = connector.configure()?;
 
@@ -63,32 +106,14 @@ impl Executable for Command {
     }
 }
 
-fn populate_cipher_list() -> Result<Vec<ssl::SslCipher>, Error> {
-    let mut builder = ssl::SslContext::builder(ssl::SslMethod::tls())?;
-    builder.set_cipher_list("ALL:COMPLEMENTOFALL")?;
-    // Empty string in `set_ciphersuites` expands: https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_ciphersuites.html
-    builder.set_ciphersuites("")?;
-    let state = ssl::Ssl::new(&builder.build())?;
-
-    Err(super::error::Error::InternalError{ description: "not implemented".to_string() }.into())
-}
-
-fn try_parse_proto_versions(versions: &str) -> Result<Vec<ssl::SslVersion>, Error> {
-    let mut ssl_versions = vec![];
-    for version in versions.split(",") {
-        ssl_versions.push(try_parse_proto_version(version)?);
-    }
-
-    Ok(ssl_versions)
-}
-
-fn try_parse_proto_version(version: &str) -> Result<ssl::SslVersion, Error> {
+fn try_parse_proto_version(version: &str) -> Result<Option<ssl::SslVersion>, Error> {
     match version.to_lowercase().as_str() {
-        "sslv3" => Ok(ssl::SslVersion::SSL3),
-        "tlsv1" => Ok(ssl::SslVersion::TLS1),
-        "tlsv1.1" => Ok(ssl::SslVersion::TLS1_1),
-        "tlsv1.2" => Ok(ssl::SslVersion::TLS1_2),
-        "tlsv1.3" => Ok(ssl::SslVersion::TLS1_3),
+        "sslv3" => Ok(Some(ssl::SslVersion::SSL3)),
+        "tlsv1" => Ok(Some(ssl::SslVersion::TLS1)),
+        "tlsv1.1" => Ok(Some(ssl::SslVersion::TLS1_1)),
+        "tlsv1.2" => Ok(Some(ssl::SslVersion::TLS1_2)),
+        "tlsv1.3" => Ok(Some(ssl::SslVersion::TLS1_3)),
+        "" => Ok(None),
         _ => Err(super::error::Error::UnknownProtocolVersion { version: version.to_string() }.into()),
     }
 }
