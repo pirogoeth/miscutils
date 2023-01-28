@@ -14,7 +14,7 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
-structopt = "0.3.12"
+structopt = "0.3.14"
 failure = "0.1.7"
 
 [dependencies.miscutils-core]

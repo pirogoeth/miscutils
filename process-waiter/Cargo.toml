@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 failure = "0.1.7"
-structopt = "0.3.12"
+structopt = "0.3.14"
 tempfile = "3"
 unix-named-pipe = "0.2.0"
 
